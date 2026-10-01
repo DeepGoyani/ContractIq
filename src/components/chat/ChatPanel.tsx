@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles, Loader2, Info } from "lucide-react";
 import { useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { useDocumentContext } from '../documents/DocumentContext';
+import { Badge } from "@/components/ui/badge";
 
 export function ChatPanel({ documentId }: { documentId: string }) {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
@@ -12,12 +16,37 @@ export function ChatPanel({ documentId }: { documentId: string }) {
     body: { documentId }
   });
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { setActiveCitation } = useDocumentContext();
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  const MarkdownComponents = {
+    p: ({ node, children, ...props }: any) => <p className="mb-2 last:mb-0 leading-relaxed" {...props}>{children}</p>,
+    ul: ({ node, children, ...props }: any) => <ul className="list-disc pl-4 mb-2" {...props}>{children}</ul>,
+    ol: ({ node, children, ...props }: any) => <ol className="list-decimal pl-4 mb-2" {...props}>{children}</ol>,
+    li: ({ node, children, ...props }: any) => <li className="mb-1" {...props}>{children}</li>,
+    a: ({ node, href, children, ...props }: any) => {
+      if (href?.startsWith('#citation')) {
+        return (
+          <Badge 
+            variant="outline" 
+            className="cursor-pointer ml-1 hover:bg-indigo-100 hover:text-indigo-700 transition-colors text-[10px] h-4 px-1"
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveCitation({ text: String(children) });
+            }}
+          >
+            {children}
+          </Badge>
+        );
+      }
+      return <a href={href} {...props} className="text-indigo-400 hover:underline">{children}</a>
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-white border-l">
@@ -46,7 +75,14 @@ export function ChatPanel({ documentId }: { documentId: string }) {
                 </div>
               )}
               <div className={`rounded-2xl px-4 py-3 max-w-[85%] text-sm ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-100 text-slate-900 rounded-tl-none'}`}>
-                {m.content}
+                
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]} 
+                  components={MarkdownComponents}
+                >
+                  {m.content}
+                </ReactMarkdown>
+
                 {m.toolInvocations && m.toolInvocations.length > 0 && (
                   <div className="mt-3 space-y-2">
                     {m.toolInvocations.map(t => (

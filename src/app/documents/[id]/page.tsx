@@ -21,14 +21,14 @@ export default async function DocumentPage(props: { params: Promise<{ id: string
 
   return (
     <DocumentProvider>
-      <div className="flex h-screen bg-slate-50 overflow-hidden">
+      <div className="flex flex-col lg:flex-row h-screen bg-slate-50 overflow-hidden">
         {/* Left Pane - Document Viewer */}
-        <div className="flex-1 flex flex-col min-w-0 border-r bg-white">
+        <div className="flex-1 flex flex-col min-w-0 lg:border-r border-b bg-white h-[50vh] lg:h-auto">
           <DocumentViewer document={document} pages={document.pages} />
         </div>
 
         {/* Right Pane - AI Chat */}
-        <div className="w-[450px] flex-shrink-0 bg-slate-50 flex flex-col">
+        <div className="w-full lg:w-[450px] lg:flex-shrink-0 bg-slate-50 flex flex-col h-[50vh] lg:h-auto">
           <ChatPanel documentId={document.id} />
         </div>
       </div>

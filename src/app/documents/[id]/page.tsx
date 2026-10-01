@@ -1,5 +1,6 @@
 import { DocumentViewer } from "@/components/documents/DocumentViewer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
+import { DocumentProvider } from "@/components/documents/DocumentContext";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
@@ -19,16 +20,18 @@ export default async function DocumentPage(props: { params: Promise<{ id: string
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      {/* Left Pane - Document Viewer */}
-      <div className="flex-1 flex flex-col min-w-0 border-r bg-white">
-        <DocumentViewer document={document} pages={document.pages} />
-      </div>
+    <DocumentProvider>
+      <div className="flex h-screen bg-slate-50 overflow-hidden">
+        {/* Left Pane - Document Viewer */}
+        <div className="flex-1 flex flex-col min-w-0 border-r bg-white">
+          <DocumentViewer document={document} pages={document.pages} />
+        </div>
 
-      {/* Right Pane - AI Chat */}
-      <div className="w-[450px] flex-shrink-0 bg-slate-50 flex flex-col">
-        <ChatPanel documentId={document.id} />
+        {/* Right Pane - AI Chat */}
+        <div className="w-[450px] flex-shrink-0 bg-slate-50 flex flex-col">
+          <ChatPanel documentId={document.id} />
+        </div>
       </div>
-    </div>
+    </DocumentProvider>
   );
 }

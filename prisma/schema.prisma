@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MessageStatus {
+  STREAMING
+  COMPLETED
+  INTERRUPTED
+  ERROR
+}
+
+model Document {
+  id                String                 @id @default(cuid())
+  filename          String
+  originalName      String
+  mimeType          String
+  fileSize          Int
+  storageKey        String
+  status            DocumentStatus
+  processingError   String?
+  pageCount         Int?
+  wordCount         Int?
+  extractedText     String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  pages             Page[]
+  chunks            Chunk[]
+  messages          Message[]
+  citations         Citation[]
+  conversations     ConversationDocument[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Page {
+  id           String   @id @default(cuid())
+  documentId   String
+  pageNumber   Int
+  text         String
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, pageNumber])
+}
+
+model Chunk {
+  id           String   @id @default(cuid())
+  documentId   String
+  pageStart    Int
+  pageEnd      Int
+  chunkIndex   Int
+  section      String?
+  text         String
+  startOffset  Int
+  endOffset    Int
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, chunkIndex])
+}
+
+model Message {
+  id             String         @id @default(cuid())
+  documentId     String?
+  role           MessageRole
+  content        String
+  status         MessageStatus
+  createdAt      DateTime       @default(now())
+  document       Document?      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   Conversation?  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  citations      Citation[]
+
+  @@index([createdAt])
+}
+
+model Conversation {
+  id          String                 @id @default(cuid())
+  title       String?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  messages    Message[]
+  documents   ConversationDocument[]
+
+  @@index([updatedAt])
+}
+
+model ConversationDocument {
+  conversationId String
+  documentId     String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  document       Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, documentId])
+}
+
+model Citation {
+  id               String   @id @default(cuid())
+  messageId        String
+  documentId       String
+  quote            String
+  normalizedQuote  String
+  verified         Boolean
+  pageStart        Int?
+  pageEnd          Int?
+  startOffset      Int?
+  endOffset        Int?
+  confidence       Float?
+  createdAt        DateTime @default(now())
+  message          Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}

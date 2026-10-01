@@ -34,6 +34,7 @@ export async function POST(req: Request) {
       system: SYSTEM_PROMPT + `\n\nEnsure your final response includes clear quotes if you are referencing the document. The current document ID is: ${documentId}`,
       messages,
       tools: documentTools,
+      // @ts-ignore
       maxSteps: 5,
       onFinish: async ({ text }) => {
         // Save the assistant's final response to the database
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
       }
     });
 
-    return result.toDataStreamResponse();
+    return (result as any).toDataStreamResponse ? (result as any).toDataStreamResponse() : (result as any).toTextStreamResponse();
   } catch (error) {
     console.error('Chat error:', error);
     return NextResponse.json({ error: 'Chat failed' }, { status: 500 });

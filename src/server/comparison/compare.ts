@@ -36,8 +36,8 @@ export async function compareDocuments(docAId: string, docBId: string): Promise<
     
     if (aChunks.length === 0 && bChunks.length === 0) continue;
 
-    const aText = aChunks.map(c => c.text).join('\n...\n');
-    const bText = bChunks.map(c => c.text).join('\n...\n');
+    const aText = aChunks.map((c: any) => c.text).join('\n...\n');
+    const bText = bChunks.map((c: any) => c.text).join('\n...\n');
 
     const result = await generateObject({
       model: getModel(),

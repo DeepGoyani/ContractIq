@@ -1,4 +1,4 @@
-import pdfParse from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 import { readFile } from 'fs/promises';
 
@@ -55,7 +55,7 @@ async function extractPDF(filePath: string): Promise<ExtractionResult> {
     throw new Error('NO_READABLE_TEXT');
   }
 
-  const wordCount = data.text.split(/\s+/).filter(w => w.length > 0).length;
+  const wordCount = data.text.split(/\s+/).filter((w: string) => w.length > 0).length;
 
   return {
     pages,
@@ -73,7 +73,7 @@ async function extractDOCX(filePath: string): Promise<ExtractionResult> {
     text: text
   }];
 
-  const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+  const wordCount = text.split(/\s+/).filter((w: string) => w.length > 0).length;
 
   return {
     pages,

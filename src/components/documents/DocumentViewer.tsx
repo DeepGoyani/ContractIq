@@ -2,11 +2,47 @@
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Link as LinkIcon, ArrowLeft } from "lucide-react";
+import { FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useDocumentContext } from "./DocumentContext";
+import { useEffect, useRef } from "react";
 
 export function DocumentViewer({ document, pages }: { document: any, pages: any[] }) {
+  const { activeCitation } = useDocumentContext();
+  const highlightRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (activeCitation && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [activeCitation]);
+
+  const renderHighlightedText = (text: string) => {
+    if (!activeCitation || !activeCitation.text) return text;
+    
+    // Case-insensitive exact match
+    const lowerText = text.toLowerCase();
+    const lowerQuery = activeCitation.text.toLowerCase();
+    const index = lowerText.indexOf(lowerQuery);
+    
+    if (index === -1) return text;
+    
+    const before = text.substring(0, index);
+    const match = text.substring(index, index + activeCitation.text.length);
+    const after = text.substring(index + activeCitation.text.length);
+    
+    return (
+      <>
+        {before}
+        <span ref={highlightRef} className="bg-yellow-200 text-yellow-900 px-1 py-0.5 rounded-sm font-semibold shadow-sm transition-all duration-500 shadow-yellow-200">
+          {match}
+        </span>
+        {after}
+      </>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full">
       <header className="h-14 border-b flex items-center px-4 justify-between bg-white shrink-0">
@@ -45,7 +81,7 @@ export function DocumentViewer({ document, pages }: { document: any, pages: any[
                 <div key={page.id} className="bg-white p-8 md:p-12 shadow-sm border rounded-sm min-h-[800px] relative">
                   <div className="absolute top-4 right-4 text-xs text-slate-400 font-mono">Page {page.pageNumber}</div>
                   <div className="prose prose-sm md:prose-base max-w-none prose-slate" style={{ whiteSpace: 'pre-wrap' }}>
-                    {page.text}
+                    {renderHighlightedText(page.text)}
                   </div>
                 </div>
               ))}

@@ -1,4 +1,3 @@
-const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 import { readFile } from 'fs/promises';
 
@@ -23,6 +22,7 @@ export async function extractDocumentText(filePath: string, mimeType: string): P
 }
 
 async function extractPDF(filePath: string): Promise<ExtractionResult> {
+  const pdfParse = require('pdf-parse');
   const dataBuffer = await readFile(filePath);
   
   const pages: ExtractedPage[] = [];

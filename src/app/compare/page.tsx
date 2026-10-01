@@ -1,9 +1,17 @@
-import { UploadDropzone } from "@/components/dashboard/UploadDropzone";
+import { CompareClient } from "@/components/comparison/CompareClient";
+import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-export default function ComparePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ComparePage() {
+  const documents = await prisma.document.findMany({
+    where: { status: 'READY' },
+    orderBy: { createdAt: 'desc' }
+  });
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b px-6 py-4 flex items-center gap-4">
@@ -17,24 +25,11 @@ export default function ComparePage() {
 
       <main className="max-w-5xl mx-auto p-6 md:p-12 space-y-8">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Upload Versions</h2>
-          <p className="text-slate-500 mt-2">Upload the original and revised versions of a contract to highlight differences and automatically analyze critical clause changes.</p>
+          <h2 className="text-2xl font-semibold tracking-tight">Select Versions</h2>
+          <p className="text-slate-500 mt-2">Select the original and revised versions of a contract to highlight differences and automatically analyze critical clause changes.</p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <h3 className="font-medium text-sm text-slate-700">Original Document</h3>
-            <UploadDropzone />
-          </div>
-          <div className="space-y-4">
-            <h3 className="font-medium text-sm text-slate-700">Revised Document</h3>
-            <UploadDropzone />
-          </div>
-        </div>
-        
-        <div className="text-center p-12 text-slate-400 border border-dashed rounded-xl bg-slate-50/50">
-          Upload both documents to automatically generate an intelligent comparison report.
-        </div>
+        <CompareClient documents={documents} />
       </main>
     </div>
   );
